@@ -10,30 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Install Pandoc and LaTeX dependencies
       - name: Install Pandoc and dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
-      # Step 3: Convert all Markdown files to PDFs
+      - name: Check Pandoc Version
+        run: pandoc --version
+
+      # Step to list markdown files to ensure they exist
+      - name: List Markdown Files
+        run: |
+          echo "Markdown files found:"
+          find . -type f -name "*.md"
+
       - name: Convert Markdown to PDF
         run: |
+          set -e # Exit on error
+          mkdir -p pdfs # Ensure the 'pdfs' directory exists
           for dir in $(find . -type d); do
-            if [ -f "$dir/*.md" ]; then
+            echo "Processing directory: $dir"
+            if ls "$dir"/*.md 1> /dev/null 2>&1; then
               mkdir -p "pdfs/$dir" # Create a similar directory structure in the 'pdfs' folder
               for file in "$dir"/*.md; do
                 filename=$(basename "$file" .md)
+                echo "Converting $file to pdfs/$dir/$filename.pdf"
                 pandoc "$file" -o "pdfs/$dir/$filename.pdf" --pdf-engine=xelatex
               done
             fi
           done
 
-      # Step 4: Upload PDF artifacts
+      - name: List PDFs
+        run: |
+          echo "Generated PDFs:"
+          find pdfs/ -type f -name "*.pdf"
+
       - name: Upload PDFs
         uses: actions/upload-artifact@v3
         with:
