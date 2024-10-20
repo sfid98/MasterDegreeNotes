@@ -47,8 +47,19 @@ jobs:
           echo "Generated PDFs:"
           find pdfs/ -type f -name "*.pdf"
 
-      - name: Upload PDFs
-        uses: actions/upload-artifact@v3
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
+      # Step 5: Commit the new PDFs to the repository
+      - name: Commit PDFs
+        run: |
+          git add .  # Add all the generated PDF files to staging
+          git commit -m "Generate and commit updated PDFs" || echo "No changes to commit"  # Commit changes only if there are new PDFs
+      
+            # Step 6: Push changes back to the repository
+      - name: Push changes
+        uses: ad-m/github-push-action@v1
         with:
-          name: PDFs
-          path: pdfs/
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token to push the changes
