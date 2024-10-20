@@ -457,8 +457,6 @@ We can compute the empirical mean and variance by:
 
 $$
 \mu = \frac{1}{m}\sum_{i=1}^{m} x^{(i)} \\
-\\
-
 \sigma^2 = \frac{1}{m}\sum_{i=1}^{m}(x^{(i)} - \mu)^2
 $$
 
