@@ -1,0 +1,41 @@
+name: Generate PDFs from Markdown
+
+on:
+  push:
+    branches:
+      - main # Trigger workflow on push to the 'main' branch (you can change the branch name)
+
+jobs:
+  generate-pdfs:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install Pandoc and LaTeX dependencies
+      - name: Install Pandoc and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
+
+      # Step 3: Convert all Markdown files to PDFs
+      - name: Convert Markdown to PDF
+        run: |
+          for dir in $(find . -type d); do
+            if [ -f "$dir/*.md" ]; then
+              mkdir -p "pdfs/$dir" # Create a similar directory structure in the 'pdfs' folder
+              for file in "$dir"/*.md; do
+                filename=$(basename "$file" .md)
+                pandoc "$file" -o "pdfs/$dir/$filename.pdf" --pdf-engine=xelatex
+              done
+            fi
+          done
+
+      # Step 4: Upload PDF artifacts
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v3
+        with:
+          name: PDFs
+          path: pdfs/
