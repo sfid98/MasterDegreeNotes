@@ -38,7 +38,7 @@ jobs:
               for file in "$dir"/*.md; do
                 filename=$(basename "$file" .md)
                 echo "Converting $file to pdfs/$dir/$filename.pdf"
-                pandoc "$file" -o "pdfs/$dir/$filename.pdf" --pdf-engine=xelatex
+                pandoc "$file" -o "pdfs/$dir/$filename.pdf"
               done
             fi
           done
