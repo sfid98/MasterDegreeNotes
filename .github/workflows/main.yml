@@ -16,8 +16,7 @@ jobs:
       - name: Install Pandoc and dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
-
+          sudo apt-get install -y pandoc groff ghostscript textlive
       - name: Check Pandoc Version
         run: pandoc --version
 
