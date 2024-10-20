@@ -7,10 +7,10 @@
 
 We have a space with negative and positive examples. The problem is to separate the samples using a straight line. And then line is drawn with the view of putting the widest street that separates the positive from the negative examples. (The margin that I drawn is the smallest distance to the closest point)
  
-![image](./images/straight.png)
+![image](/machineLearning/images/straight.png)
 
 
-![image](./images/street.png)
+![image](/machineLearning/images/street.png)
 
 
 We want to create a decision rules that use that decision boundary
@@ -62,7 +62,7 @@ The goal is to arrange for the line to be such at the street separating the plus
 We can consider the difference between the two vectors $\vec{x_+} - \vec{x_-}$ and project the difference to a unit vector that is perpendicular to the straight line.
 
 
-![image](./images/width.png)
+![image](/machineLearning/images/width.png)
 
 $$
 \text{WIDTH} = (\vec{x_+} - \vec{x_-})\cdot \frac{\vec{w}}{||w||}) 
@@ -176,7 +176,7 @@ So we discovered that the decison rules depends only on the dot product of those
 
 ### Non Linear separable data
 
-![image](./images/misclassification.png)
+![image](/machineLearning/images/misclassification.png)
 
 
 The derivation of the SVM as presented so far assumed that the data is linearly separable. When data are non-linearly separable, we may get a separation between classes with a hyperplane only allowing that, after having defined the separating hyperplane, some pattern of the training set with positive label are classified as negative and viceversa. We must accept that some constraints are **violated**
@@ -213,12 +213,12 @@ The dual variables are now bounded with C. The proposed solution could not be en
 ### Cover's theorem
 Cover's theorem state that, a complex pattern classification problem, cast in a high dimensional space nonlinearly, is more likely to be linearly separable than in a low dimensional space, provided that the space is not densely populated.
 Or in simple terms, given a set of training data that is not linearly separable, one can transform it into a training set that is linearly seperable by mapping it into a possibly higher dimensional space via some non linear transformation.
-![image](./images/covers.png)
+![image](/machineLearning/images/covers.png)
 
 1. Patterns (input space) are mapped into a space with (much) higher dimension (feature space) through kernel functions;
 2. The optimal hyperplane is defined within this feature space
 
-![image](./images/nonLinear.png)
+![image](/machineLearning/images/nonLinear.png)
 
 In this case the samples are not linearly separable and we are not able to find a solution for our problem, but we can move to another space that is more convenient for our purposes:
 
@@ -341,4 +341,99 @@ And support vector tells us where to put the line such as it has the same distan
 
 
 
-## Unsupervised Learning
+## Unsupervised Learning (Stanford CS229 Notes)
+
+### K-Means
+In the supervised setting we get points with labels that we can separate with a line and with a supervised learning algorithm. In unsupervised we have the points but we don't have the labels. Unsupervised learning is harder so we have to allow stronger assumptions and we're gonna have to assume that there are some kind of latent or hidden structure and we're gonna have to allow weaker guarantees. (Guess number of cluster for example and assume that there is some cluster in our data).
+
+So we have some data and set up the number of cluster e.g $K=2$ and our goal is to find the cluster.
+So given a dataset with points $x^{(1)} \text{ ... } x^{(n)} \in \mathbb{R^d}$ and $K$ # of cluster, we find an assignment to point to cluster in this way $C^{(i)} = j$ means that the point i belong to cluster j. Where i = 1 ... n and j = 1 ... k.
+
+![image](/machineLearning/images/kmeans1.png)
+
+So we start assigning points to cluster, for example $C^{(3)} = 2$ means that point 3 is in cluster 2.
+
+#### How do we find the clusters?
+
+![image](/machineLearning/images/kmeans2.png)
+
+We use and iterative approach. So we're going to start by randomly picking cluster centers for each cluster and find the optimal one in which all the points belonging to the cluster are closer to the center than they are to any other center. 
+So the first step of the algorith is
+1. Randomly initialize center cluster points $\mu^{(1)}$ and $\mu^{(2)}$ (They don't have to be point in the dataset)
+2. Assign each point to a cluster by considering the distance to each center cluster $C^{(i)} = argmin_{j=1...k} ||\mu^{(j)} - x^{(i)}||^2$
+3. I compute new cluster centers
+
+And I repeat the step 2 and step 3 until there are no more changes.
+The cluster center can be computed in this way
+$$
+\mu^{(j)} = \frac{1}{|\Omega_j|} \sum_{i \in \Omega_j} x^{(i)} \text{ s.t } \Omega_j = {i:C^{(i)} = j}
+$$
+
+Notice that if the point assignment doesn't change in step 2 the center will not change (step 3).
+
+The first question is: Does it terminate? and the answer is yes. 
+
+$$
+J(C,\mu) = \sum_{i=1}^N ||x^{(i)} - \mu^{C^{(i)}}||^2
+$$
+That is, the distance between a point and its cluster center is actually monotonically decreasing. So the oscillation can happen (you can basically do grandient descent on this) but it converges to something but it does not converge necessarily to a global minimizer
+
+#### How do you choose k?
+
+There is no one right answer (modeling question).
+
+#### Professor slide 
+
+![image](/machineLearning/images/kmeans3.png)
+
+**Objective Function(L)**
+The K-means algorithm aims to minimize the within-cluster sum of squares, which measures the distance between each data point $x^{(i)}$ and the centroid $\mu_k$ of the cluster it belongs to.
+The objective function is defined as:
+
+$$
+L = \sum_{k=1}^{K}\sum_{i=1}^{m} a_{ik}||x^{(i)} - \mu_k||^2
+$$
+
+- $K$: The number of clusters.
+- $m$: The number of data points.
+- $a_{ik}$: A binary variable, which is 1 if data point $x^{(i)}$ is assigned to cluster k, and 0 otherwise.
+- $x^{(i)}$ : The i-th data point in the dataset
+- $\mu_k$: The centroid (mean) of the k-th cluster
+
+The algorithm attempts to minimize L, which is the total sum of squared distances between each data point and the centroid of the cluster of which it belongs.
+
+**Expectation Step**
+
+In this step, the algorithm assigns each data point $x^{(i)}$ to the nearest cluster centroid $\mu_k$. Mathematically, it computes the binary assignment variable $a_{ik}$:
+
+$$
+a_{ik} = 
+\begin{cases}
+1 \text{ if k = arg min}_l ||x^{(i)} - \mu_l||^2 \\
+0 \text{ otherwise }
+\end{cases}
+$$
+
+This means that for each data point, the cluster index k is chosen such that the distance between the point $x^{(i)}$ and the centroid $\mu_k$ is minimized. The variable $a_{ik}$ will be 1 if the point is assigned to cluster k, and 0 otherwise.
+
+**Maximization Step**
+
+Once the assignments are made, the centroids of the clusters are updated to reflect the new mean position of the points in each cluster. The update for the $k-th$ cluster centroid $\mu_k$ is given by:
+
+$$
+\mu_k = \frac{1}{n_k}\sum_{i:x_i\in C_k}x^{(i)}
+$$
+
+- $n_k = \sum_{i=1}^{m} a_{ik}$: The number of points assigned to cluster k.
+- $C_k$: The set of points assigned to cluster k.
+
+The new centroid $\mu_k$ is the average of all the points currently assigned to cluster k. This update ensures that the centroid moves towards the center of the points assigned to it.
+
+**Iteration**
+The algorithm repeats the Expectation Step and the Maximization step alternately:
+1. In the Expectation Step it assigns points to the nearest cluster.
+2. In the M-step, it updates the cluster centroids to the mean of the assigned points.
+
+This process continues until the assignments no longer change, meaning the algorithm has
+
+### Multivariate Gaussian distributions
