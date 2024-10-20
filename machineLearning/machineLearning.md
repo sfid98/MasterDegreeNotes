@@ -301,7 +301,7 @@ To use Support Vector Machines you have to define
 General rules for the set up do not exist, but you should make your choice on a validation set, usually through cross validation.
 
 ### Advantages of SVMs
-- There are no local minima (the optimization problem is quadratic -> $\exist !$ optimal solution)
+- There are no local minima (the optimization problem is quadratic -> $\exists$ ! optimal solution)
 - The optimal solution can be found in polynomial time.
 - There are few parameters to set up (C, type of kernel and specific kernel parameters)
 - Solution is stable (ex. there is no problem of randomly initializing of weights just as in Neural Networks)
