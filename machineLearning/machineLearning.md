@@ -437,3 +437,153 @@ The algorithm repeats the Expectation Step and the Maximization step alternately
 This process continues until the assignments no longer change, meaning the algorithm has
 
 ### Multivariate Gaussian
+
+A **Multivariate Gaussina distribution** extends the concept of a normal distribution to multiple dimension. It is characterized by a **mean vector** and a **covariance matrix**.
+#### Gaussian (Normal) distribution
+
+![image](./images/normDist.png)
+
+In a Gaussian (Normal) distribution we have $x \in \mathbf{R}$ that is our random variable and $x$ has a Gaussina distribution with mean $\mu$ and variance $\sigma^2$. We can express this fact with this notation $x \sim \mathcal{N}(\mu, \sigma^2)$.
+The formula for the probability is 
+
+$$
+p(x;\mu,\sigma^2) = \frac{1}{\sqrt{2\pi}}e^{\frac{-(x - \mu)^2}{2\sigma^2}}
+$$
+
+##### Parameters estimation
+
+Given a dataset : ${x^{(1)},x^{(2)},...,x^{(m)}}$
+We can compute the empirical mean and variance by:
+
+$$
+\mu = \frac{1}{m}\sum_{i=1}^{m} x^{(i)} \\
+\\
+
+\sigma^2 = \frac{1}{m}\sum_{i=1}^{m}(x^{(i)} - \mu)^2
+$$
+
+#### Multivariate Gaussian (Normal) distribution
+
+For the multivariate case we define the following quantities
+
+$$
+x \in \mathbf{R^n} \\
+\mu \in \mathbf{R^n} \\
+\sum \in \mathbf{R^{nxn}} \text{ covariance matrix }
+$$
+
+And our probability will be:
+
+$$
+p(x;\mu;\sum) = \frac{e^{\left(-\frac{1}{2}(x - \mu)^T \sum^{-1}(x-\mu)\right)}}{\sqrt{(2 \pi)^n |\sum|}}
+$$
+
+##### Example: Height and Weight in a Population (Optional Reading)
+
+Let's assume we want to model the height and weight of individuals in a population using a 2D multivariate Gaussian distribution. We'll desribe the joint distribution of these two variables using:
+- A  mean vector representing the average height and weight
+- A covariance matrix representing the variance in height, variance in weight, and how the two variables are correlated.
+
+1. Mean Vector
+
+The mean vector $\mu$ consist of the mean of the two variables:
+$$
+\mu = 
+\left[
+    \begin{aligned}
+    & \mu_{height} \\
+    & \mu_{weight} \\
+    \end{aligned}
+\right]
+$$
+
+For example:
+
+$$
+\mu = 
+\left[
+    \begin{aligned}
+    & 170 \text{ cm (average height)} \\
+    & 70 \text{ kg (average weight)} \\
+    \end{aligned}
+\right]
+$$
+
+2. Covariance Matrix
+
+The covariance matrix $\sum$ contains information about the variances of each variable and their covariance:
+
+$$
+\sum = 
+\begin{bmatrix}
+\sigma_{height^2} & Cov(height, weight) \\
+Cov (height, weight) & \sigma_{weight}^2
+\end{bmatrix}
+$$
+
+- $\sigma_{height}^2$ = $100cm^2$ that is the variance of height, so standard deviation of height $\sigma_{height} = 10 cm$
+
+- $\sigma_{weight}^2$ = $225kg ^2$ that is the variance of weight, so standard deviation of height $\sigma_{weight} = 50$
+
+###### Interpretation
+- The covariance matrix indicates that height and weight are positively correlated (Covariance = 50). Taller individuals tend to weigh more.
+A positive covariance means that when one variable (height) increases, the other variable (weight) also tends to increase.
+
+For a population described by this bivariate Gaussian distribution:
+
+- Average height = 170 cm
+- Average weight = 70 kg
+- Height standard deviation = 10 cm
+- Weight standard deviation = 15 kg
+- Positive correlation between height and weight (Covariance = 50).
+
+If you plot a 2D contour of this distribution, it would look like elliptical contours centered around the mean vector (170 cm, 70 kg), with the major axis of the ellipse tilted due to the positive correlation between height and weight.
+
+The major axis of the elliptical contours in a Multivariate Gaussian distribution is determined by the direction of the greatest variance (or spread) of the data. To determine whether the major axis is aligned more with weight or height, we need to look at both the variances and the covariance between the two variables.
+
+In our example we have that
+
+$$
+\sum = 
+\begin{bmatrix}
+100 & 50 \\
+50 & 225
+\end{bmatrix}
+$$
+
+1. Variance Comparison: The variance in weight (225) is larger than the variance in height (100). This suggests that there is more spread in the weight data than in the height data, which is an initial clue that the major axis might be aligned more with weight.
+
+2. Covariance: The positive covariance (50) between height and weight indicates that the two variables are positively correlated. This means that when height increases, weight tends to increase as well. The ellipse is tilted upward due to this correlation.
+
+###### Eigenvalues and Eigenvectors
+
+To rigorously determine the direction of the major axis, we would compute the eigenvalues and eigenvectors of the covariance matrix $\Sigma$ . The eigenvectors give the direction of the principal axes (major and minor), and the eigenvalues indicate the magnitude of variance along these axes.
+
+1. Larger eigenvalue: Corresponds to the major axis (the direction of maximum variance).
+
+2. Smaller eigenvalue: Corresponds to the minor axis (the direction of minimum variance).
+
+Since the variance in weight is larger than the variance in height, we can reasonably expect that the major axis will be closer to the direction of weight. However, because of the positive covariance, the major axis will be tilted, not perfectly aligned with either height or weight. The direction of the tilt would be somewhere between the two, leaning more toward the weight axis because the variance in weight is higher
+
+In the context of the covariance matrix, the eigenvalue problem is solved by finding the eigenvalues and eigenvectors of the matrix. This allows us to determine the principal axes of the ellipse and how spread out the data is along these axes.
+
+The eigenvalue equation is given by:
+
+$$
+\Sigma v = \lambda v
+$$
+
+Where:
+
+- v is an eigenvector, representing the direction of one of the principal axes.
+- $\lambda$ is an eigenvalue, representing the variance along that direction.
+
+The characteristic equation to find the eighenvalues is:
+
+$$
+det(\Sigma - \lambda I) = 0
+$$
+
+Where I is the identity matrix.
+
+After solving for the eigen values, we use them to find the eigenvectors, which tell us the direction of the major axes of the ellipse.
