@@ -585,3 +585,6 @@ $$
 Where I is the identity matrix.
 
 After solving for the eigen values, we use them to find the eigenvectors, which tell us the direction of the major axes of the ellipse.
+
+Resources
+- [Alexander Ihler](https://www.youtube.com/watch?v=eho8xH3E6mE)

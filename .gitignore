@@ -1,0 +1,3 @@
+# Ignore the pdf of all the folders except the pdfs folders
+*.pdf
+!**/pdfs/*.pdf
