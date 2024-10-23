@@ -931,3 +931,226 @@ So to give a concrete Idea
     $$
     TD_{C_1 \cup C_2} = \sum_{x \in C_1 \cup C_2} D(x, \mu_{c_1 \cup c_2})^{2}
     $$
+
+##### Resources
+- https://www.youtube.com/watch?v=ipwPJRoDAOE
+
+### DBSCAN
+DBSCAN stands for Density Based Spatial Clustering of Applications with Noise. DBSCAN is a density based agglomerative algorithm. Density-based Clustering locates regions of high density that are separeted from one another by regions of low density.
+
+In this case Density is defines as teh number of points witchina specified radius (Eps)
+
+#### DBSCAN concepts
+- A point is a core point if it has more than a specified number of points (Min pts) within Eps. These are points that are at the interior of a cluster
+- A border point has fewer that Minpts within Eps, but it is in the neighborhood of a core point
+- A noise point is any point that is not a core point or a border point
+- Eps-Neighborhood are the points within a radius of Eps from a point
+
+- Any two core points are close enough, within a distance Eps of one another, are put in the same cluster
+- Any border point that is close enough to a core point is put in the same cluster as the core point
+- Noise points are discarded
+
+We have to set two different parameters
+- Epsilon := physical distance or radius
+- minPts := desired minimum cluster size
+
+- Epsilon can be chosen using a k-distance graph
+- minPts can be chosen with the empirical rule: minPts >=(number of Dimensions) + 1
+
+**Directly density-reachable**
+
+An object q is directly density-reachable from object p if q is within the $\epsilon$ Neighborhood of p and p is a core object.
+
+![image](./images/dbScan1.png)
+
+q is directly density-reachable from p.
+p is not directly density-reachable from q
+
+**Density-connectivity**
+Object p is density-connected to object q w.r.t $\epsilon$ and MinPts if there is an object r such that both p and q are density-reachable from r w.r.t $\epsilon$ and MinPts
+
+**Density-connectivity**
+
+A point P is density connected to Q given eps, MinPts if there is a chain of points $P_1, P_2,P_3...P_n$, $P_1=P$ and $P_n = Q$ such that $P_{i+1}$ is directly density reachable from $P_i$
+
+#### Simplified DBSCAN Algorithm
+1. Identify all points as either core point, border point or noise point
+2. For all of the unclusterd core points
+    - Create a new cluster
+    - Add all the points that are unclusterd and density connected to the current point into this cluster (build the chain of density connected point with the current point) 
+3. For each unclustered border point assign it to the cluster of nearest core point.
+4. Leave all the noise points as it is.
+#### DBSCAN Algorithm
+
+```
+CorePoints = []
+NoisePoints = []
+For x(i) in X:
+    Retrieve all points density-reachable from x(i)
+    if x(i) is a core point, a cluster is formed.
+    CorePoints.push(x(i))
+For x(i) in CorePoints :
+    Retrieve all the connected components of core points on the neighbor graph, ignoring all non-core points.
+    Merge the clusters
+For x(i) in X/CorePoints :
+    if distance from the nearest cluster < epsilon :
+        Assign x(i) to that cluster
+    else
+        NoisePoints.push(x(i))
+```
+
+#### DBSCAN Pros
+- DBSCAN does not require one to specify the number of clusters in the data a priori, as opposed to k-means.
+- DBSCAN can find arbitrarily shaped clusters. It can even find a cluster completely surrounded by (but not connected to) a different cluster. Due to the MinPts parameter, the so-called single-link effect (different clusters
+being connected by a thin line of points) is reduced.
+- DBSCAN has a notion of noise, and is robust to outliers.
+- DBSCAN requires just two parameters and is mostly insensitive to the
+ordering of the points in the database.
+- DBSCAN is designed for use with databases that can accelerate region
+queries, e.g. using an R* tree.
+- The parameters minPts and $\epsilon$ can be set by a domain expert, if the data is
+well understood.
+
+#### DBSCAN Cons
+- DBSCAN is not entirely deterministic: border points that are reachable
+from more than one cluster can be part of either cluster, depending
+on the order the data is processed.
+- The quality of DBSCAN depends on the distance measure. The most
+common distance metric used is Euclidean distance. Especially
+for high-dimensional data, this metric can be rendered almost useless
+due to the so-called “Curse of dimensionality”
+- DBSCAN cannot cluster data sets well with large differences in
+densities, since the minPts-$\epsilon$ combination cannot then be chosen
+appropriately for all clusters.
+- If the data and scale are not well understood, choosing a meaningful
+distance threshold $\epsilon$ can be difficult.
+
+#### DBSCAN Complexity
+- Time Complexity: $O(n^2)$
+    - for each point it has to be determined if it is a core point
+    - can be reduced to O(n*log(n)) in lower dimensional spaces by using efficient data structures (n is the number of objects to be clustered)
+- Space Complexity: O(n)
+
+
+#### Resources
+
+- https://www.youtube.com/watch?v=RDZUdRSDOok StatQuest
+- https://www.youtube.com/watch?v=4AW_5nYQkuc
+- https://medium.com/@sachinsoni600517/clustering-like-a-pro-a-beginners-guide-to-dbscan-6c8274c362c4
+
+### HDBSCAN
+
+HDBSCAN is a clustering algorithm. It extends DBSCAN by converting it into a hierarchical clustering algorithm, and then using a technique to extract a flat clustering based in the stability of clusters. 
+
+The algorithm has 5 step:
+
+1. Transform the space according to the density/sparsity.
+2. Build the minimum spanning tree of the distance weighted graph.
+3. Construct a cluster hierarchy of connected components.
+4. Condense the cluster hierarchy based on minimum cluster size.
+5. Extract the stable clusters from the condensed tree.
+
+#### Transform the space
+
+We need a very inexpensive estimate of density, and the simplest is the distance to the kth nearest neighbor.
+First we define the core distance, $core_k(x)$ as the distance from x to
+the $k - th$ nearest neighbor.
+Points in denser regions would have smaller core distances while points in sparser regions would have larger core distances. Core distance is what makes these methods "density-based".
+The distance between two different samples is $d(a,b)$. 
+Next we define mutual reachability distance as follows:
+
+$$
+d_{mreach-k}(a,b) = max\{core_k(a),core_k(b),d(a,b )\}
+$$
+
+Under this metric dense points (with low core distance) remain the same distance from each other but sparser points are pushed away to be at least their core distance away from any other point.
+
+All of this is a little easier to understand with a picture, so let’s use a k value of five. Then for a given point we can draw a circle for the core distance as the circle that touches the sixth nearest neighbor (counting the point itself), like so:
+
+![image](./images/mreach1.png)
+
+Pick another point and we can do the same thing, this time with a different set of neighbors (one of them even being the first point we picked out).
+
+![image](./images/mreach2.png)
+
+And we can do that a third time for good measure, with another set of six nearest neighbors and another circle with slightly different radius again.
+
+![image](./images/mreach3.png)
+
+Now if we want to know the mutual reachability distance between the blue and green points we can start by drawing in an arrow giving the distance between green and blue:
+
+![image](./images/mreach4.png)
+
+This passes through the blue circle, but not the green circle – the core distance for green is larger than the distance between blue and green. Thus we need to mark the mutual reachability distance between blue and green as larger – equal to the radius of the green circle (easiest to picture if we base one end at the green point).
+
+![image](./images/mreach5.png)
+
+On the other hand the mutual reachablity distance from red to green is simply distance from red to green since that distance is greater than either core distance (i.e. the distance arrow passes through both circles).
+
+![image](./images/mreach6.png)
+
+In general there is underlying theory to demonstrate that mutual reachability distance as a transform works well in allowing single linkage clustering to more closely approximate the hierarchy of level sets of whatever true density distribution our points were sampled from.
+
+#### Build the minimum spanning tree
+
+Conceptually what we will do is the following: consider the data as a weighted graph with the data points as vertices and an edge between any two points with weight equal to the mutual reachability distance of those points.
+
+Now consider a threshold value, starting high, and steadily being lowered. Drop any edges with weight above that threshold. As we drop edges we will start to disconnect the graph into connected components. Eventually we will have a hierarchy of connected components (from completely connected to completely disconnected) at varying threshold levels.
+
+In practice this is very expensive: there are $n^2$ edges and we don’t want to have to run a connected components algorithm that many times. The right thing to do is to find a minimal set of edges such that dropping any edge from the set causes a disconnection of components. But we need more, we need this set to be such that there is no lower weight edge that could connect the components. Fortunately graph theory furnishes us with just such a thing: the minimum spanning tree of the graph.
+
+
+We can build the minimum spanning tree very efficiently via Prim’s algorithm – we build the tree one edge at a time, always adding the lowest weight edge that connects the current tree to a vertex not yet in the tree. You can see the tree HDBSCAN constructed below; note that this is the minimum spanning tree for mutual reachability distance which is different from the pure distance in the graph. In this case we had a k value of 5.
+
+![image](./images/treeHdbScan.png)
+
+#### Build the cluster hierarchy
+
+Given the minimal spanning tree, the next step is to convert that into the hierarchy of connected components. This is most easily done in the reverse order: sort the edges of the tree by distance (in increasing order) and then iterate through, creating a new merged cluster for each edge. The only difficult part here is to identify the two clusters each edge will join together, but this is easy enough via a union-find data structure. We can view the result as a dendrogram as we see below:
+
+![image](./images/dendogramHdbScan.png)
+
+Ideally we want to be able to cut the tree at different places to select our clusters. This is where the next steps of HDBSCAN begin and create the difference from robust single linkage.
+
+#### Condense the cluster tree
+
+The first step in cluster extraction is condensing down the large and complicated cluster hierarchy into a smaller tree with a little more data attached to each node. As you can see in the hierarchy above it is often the case that a cluster split is one or two points splitting off from a cluster; and that is the key point – rather than seeing it as a cluster splitting into two new clusters we want to view it as a single persistent cluster that is ‘losing points’. To make this concrete we need a notion of minimum cluster size which we take as a parameter to HDBSCAN. Once we have a value for minimum cluster size we can now walk through the hierarchy and at each split ask if one of the new clusters created by the split has fewer points than the minimum cluster size. If it is the case that we have fewer points than the minimum cluster size we declare it to be ‘points falling out of a cluster’ and have the larger cluster retain the cluster identity of the parent, marking down which points ‘fell out of the cluster’ and at what distance value that happened. If on the other hand the split is into two clusters each at least as large as the minimum cluster size then we consider that a true cluster split and let that split persist in the tree. After walking through the whole hierarchy and doing this we end up with a much smaller tree with a small number of nodes, each of which has data about how the size of the cluster at that node decreases over varying distance. We can visualize this as a dendrogram similar to the one above – again we can have the width of the line represent the number of points in the cluster. This time, however, that width varies over the length of the line as points fall out of the cluster. For our data using a minimum cluster size of 5 the result looks like this:
+
+![image](./images/dendogramCondensend.png)
+
+
+#### Extract the clusters
+
+First we need a different measure than distance to consider the persistence of clusters; instead we will use $\lambda = \frac{1}{distance}$.
+
+For a given cluster we can then define values $\lambda_{birth}$ and $\lambda_{death}$
+
+to be the lambda value when the cluster split off and became it’s own cluster, and the lambda value (if any) when the cluster split into smaller clusters respectively.
+
+In turn, for a given cluster, for each point p in that cluster we can define the value $\lambda_p$
+as the lambda value at which that point ‘fell out of the cluster’ which is a value somewhere between $\lambda_{birth}$ and $\lambda_{death}$ since the point either falls out of the cluster at some point in the cluster’s lifetime (it effectively becomes noise), or leaves the cluster when the cluster splits into two smaller clusters. Now, for each cluster compute the stability as
+
+$$
+\sum_{p\in cluster} (\lambda_{p} - \lambda_{birth})
+$$
+
+Declare all leaf nodes to be selected clusters. Now work up through the tree (the reverse topological sort order). If the sum of the stabilities of the child clusters is greater than the stability of the cluster, then we set the cluster stability to be the sum of the child stabilities. If, on the other hand, the cluster’s stability is greater than the sum of its children then we declare the cluster to be a selected cluster and unselect all its descendants. Once we reach the root node we call the current set of selected clusters our flat clustering and return that.
+
+Okay, that was wordy and complicated, but it really is simply performing our ‘select the clusters in the plot with the largest total ink area’ subject to descendant constraints that we explained earlier. We can select the clusters in the condensed tree dendrogram via this algorithm, and you get what you expect:
+
+![image](./images/dendogramCondensed1.png)
+
+Suppose we have three clusters, one parent (C1) and two childs
+(C2,C3).
+Suppose all leaf nodes are clusters. Now we explore Bottom-Up.
+
+```
+If stability(C2)+ stability(C3) > stability(C1)
+the cluster C1 is not stable
+we set stability(C1) = stability(C2)+ stability(C3)
+Else if stability(C1) >= stability(C2)+ stability(C3)
+C1 is a stable cluster, unset all descendants as clusters
+```
+
+#### Resources
+- https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html
