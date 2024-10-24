@@ -1,7 +1,300 @@
 # Table of Contents
 
-1. [Support Vector Machines](#1)
-2. [Unsupervised Learning](#2)
+## Linear Regression
+
+The basic idea is to understand a specific trend and to represent it with a
+mathematical formula such that we are able to apply it to new, unseen, inputs.
+Usually we have our data in a tabular form, with a column of attribute features and another
+column of outputs and we use this data to train our system.
+During the course we will use the following notation:
+
+- m = number of training examples
+- x = input variables or features
+- y = output variable or target variable
+- (x,y) is a tuple representing one training example, and similarly $(x^i,y?^i$ is the i-th training example.
+
+![image](./images/linearRegression1.png)
+
+![image](./images/linearRegression2.png)
+
+
+The idea behind linear regression task can be represented as:
+We want to realize a function $(h, hypothesis)$ that given a value of x, return the estimated value of y. We can identity two phases: a training time, in
+which our algorithm learns from data, and an
+inference space, in which we use the hypothesis we
+obtained to estimate new outputs.
+
+![image](./images/linearRegression3.png)
+
+The simplest hypothesis we can do on the $h$ function is that it is a linear function:
+
+$$
+h_{\theta}(x) = \theta_0 + \theta  x
+$$
+
+When we have this type of function as the hypothesis function we say we have a linear
+regression with one variable, or a univariate linear regression.
+
+![image](./images/linearRegression4.png)
+
+Our goal is to minimize error, and to do so first of all we have to represent it an minimize it:
+
+$$
+\theta = argmin_{\theta_0, \theta_1} \frac{1}{2m}\sum_{i=1}^{m}(h_{\theta} (x^i) - y^{i})^2
+$$
+
+So we compare the value predicted by h with the actual value for each datapoint, we square this prediction errors to avoid having negative errors and then we summ all of this errors (one for each data sample), average the result and then minimize it.
+In practice, we define a cost function and try to minimize it by theta:
+
+$$
+J(\theta_0, \theta_1) = J(\theta) = \frac{1}{2m}\sum_{i=1}^{m}(h_{\theta} (x^i) - y^{i})^2 \\
+\theta_{min} = argmin_{\theta}(J(\theta_0,\theta_1)) = argmin_{\theta}(J(\theta))
+$$
+
+### Gradient Descent
+
+**How to find $\theta_0$ and $\theta_1$ to minimize the cost function**
+
+In theory the most rigorous approach would be to calculate partial derivatives and impose
+them equal to 0 to find the exact values of the two theta, but sometimes this is not very
+computationally feasible and we rely on some computational approach: we initialize $\theta_0$ and $\theta_1$
+to some random values and then we keep changing them to reduce the cost function $J(\theta_0,\theta_1)$
+to get closer and reach the minimum.
+Depending on the initial values, in some more complex situations like neural network, we can
+end up in a minimum or in another. Depending on the initial values, in some more complex situations like neural network, we can
+end up in a minimum or in another.
+We have various approaches to update $\theta_0$ and $\theta_1$ to reach the minimum of the cost function:
+
+#### Algorithm
+
+We start from a random initialization of $\theta_0$ and $\theta_1$ and then we compute the partial derivative of the error function and update the value of the parameters on the basisi of the value of the partial derivative:
+
+$$
+\text{ Repeat until convergence }  
+\{
+    \theta_j := \theta_j - \alpha \frac{\partial}{\partial \theta_j}J(\theta_0, \theta_1) \text{for } j=0 \text{ and } j = 1  \\
+\}
+$$
+
+Note that the updates of all the parameter must be simultaneous!
+
+$\alpha > 0$ is called the learning rate, is a hyper parameter, a parameter set manually that is not part of the training model.
+With some practical example, we can better understand how this algorithm works:
+
+![image](./images/linearRegression5.png)
+
+In the first case our partial derivative is posive, so in order to decrease the actual we have to move to the left and so we use the subtract operation.
+
+In the second situation the partial derivative is negative and we have to move to the left so with the subtract operation we move to the right.
+
+The learning rate tells how much should I move from a point to the next nearer to the minimum. If the learning rate is too small I could move too slow on the other hand if it is too big I could be moving too much and the risk is to never converge or even diverge at some point.
+
+![image](./images/linearRegression6.png)
+
+Depending on the value of alpha, we have different profiles of the cost function evolution through the different iterations:
+
+![image](./images/linearRegression7.png)
+
+#### Gradient descent for linear regression
+
+Now we try to apply the gradient descent algorithm to the linear regression model. So first we have to compute the partial derivatives for the updates:
+
+
+$$
+\frac{\partial}{\partial_j} J(\theta_0, \theta_1) = \frac{\partial}{\partial \theta_j} \frac{1}{2m} \sum_{i=1}^{m}( h_{\theta}(x^{(i)} - y^{(i)}))^2 \\
+\frac{\partial}{\partial \theta_j} \frac{1}{2m} \sum_{i = 1}^{m} (\theta_0 + \theta_1 x^{(i)} - y^{(i)})^2 \\
+j = 0: \frac{\partial}{\partial \theta_0}J(\theta_0, \theta_1) = \frac{1}{m} \sum_{i=1}^{m}(h_{\theta}(x^{(i)}) - y^{i}) \\
+j = 1: \frac{\partial}{\partial \theta_1} J(\theta_0, \theta_1) = \frac{1}{m}\sum_{i=1}^{m}(h_{\theta}(x^{(i)}) - y^{(i)})x^{(i)}
+$$
+
+
+We have a close form for the partial derivatives, and thus we have a close form to evaluate
+updates:
+
+$$
+\theta_0 := \theta_0 - \alpha \frac{1}{m}\sum_{i=1}^{m}(h_{\theta}(x^{(i)}) - y^{i}) \\
+\theta_1 := \theta_1 - \alpha  \frac{1}{m}\sum_{i=1}^{m}(h_{\theta}(x^{(i)}) - y^{(i)})x^{(i)} 
+$$
+Note that the parameter should be updated simultaneuosly
+We repeat this process until we find values that fit our converging criteria.
+
+#### Multiple features
+
+What we’ve done till now has been in the hypothesis that we have only one feature
+(parameter) based on which we have to produce our prediction output. Now we have to
+expand the theory to multiple features and to do so we have to update the notation:
+
+- m = number of training examples
+- n = number of features
+- $x^{(i)}$ = input features of the i-th training example
+- $y^{(i)}$ = output variable
+- $x_j^{i}$ = value of the feature j in the i-th training example
+
+So instead of having just $\theta_0$ and $\theta_1$, we have multiple $\theta$. This means that our jupothesis function is an hyperplane in a n-dimensional space. In general, with n features we have the following hypothesis:
+
+$$
+h_{\theta} (x^{(i)}) = \theta_0 + \theta_1 x_1^{(i)} + \theta_2 x_2^{(i)} + ... \theta_n x_n^{(i)}
+$$
+
+If we introduce a fake features, namely $x_0$, and we set the values of this feature for all the
+training function equal to 1, we can easily see the previous formula as a product of vectors. 
+
+$x_0^{(i)} = 1$
+
+$$\mathbf{X}=\left[\begin{array}{c}\mathbf{x}_{\mathbf{0}} \\ \mathbf{x}_{\mathbf{1}} \\ \mathbf{x}_{\mathbf{2}} \\ \vdots \\ \mathbf{x}_{\mathbf{n}}\end{array}\right] \in \mathbb{R}^{n+1} \quad \theta=\left[\begin{array}{c}\theta_{\mathbf{0}} \\ \theta_{\mathbf{1}} \\ \theta_{\mathbf{2}} \\ \vdots \\ \theta_{\mathbf{n}}\end{array}\right] \in \mathbb{R}^{n+1}$$
+
+$$
+\underbrace{\underbrace{\left[\begin{array}{llll}\theta_{\mathbf{0}} & \theta_{\mathbf{1}} & \ldots & \theta_{\mathbf{n}}\end{array}\right]} \underbrace{\left[\begin{array}{c}\mathbf{x}_{\mathbf{0}} \\ \mathbf{x}_{\mathbf{1}} \\ \vdots \\ \mathbf{x}_{\mathbf{n}}\end{array}\right]}_{\mathbf{x}}}_{\theta^T x}
+$$
+
+$$
+h_{\theta} (x^{(i)}) = \theta_0 + \theta_1 x_1^{(i)} + \theta_2 x_2^{(i)} + ... \theta_n x_n^{(i)} = \theta^Tx.
+$$
+
+This allows for a more compact representation of the formulas. 
+
+What we’ve seen until now it is also called **Batch gradient descent**, since we use all the data points of our training set for each upgrade. I process all the batch of data in my possession for every single update step. 
+To recap it consists in the following steps:
+
+1. Randomly initialize parameters
+2. Repeat until convergence 
+    {
+    $$
+    \theta_j := \theta_j - \alpha \frac{1}{m}\sum_{i=1}^{m} (h_{\theta}(x^{(i)} - y^{(i)}) x_j^{(i)}
+    $$
+    }
+
+An alternative is the **Stochastic gradient descent**
+
+It consists in the following steps:
+1. Randomly initialize parameters
+2. Repeat until convergence {
+    for each training case {
+        $$
+        \theta_{j} := \theta_j - \alpha(h_{\theta}(x^{(i)}) - y^{(i)})x_j^{(i)}
+        $$
+    }
+}
+
+In this algorithm we randomly initialise the parameters, just like in the previous algorithm, but instead of using the whole batch for each upgrade, we upgrade our parameters after each datapoint. We call it stochastic because in this case gradient is a "stochastic approximation" of the "true" cost gradient.
+It is possible possible to find convergence in this stochastic version of the gradient descent in much less time, but convergence is not guaranteed.
+Comparing the behaviours of the two algorithms:
+
+![image](./images/linearRegression8.png)
+
+#### BATCH GD PSEUDOCODE
+
+```
+theta = rand();
+while (not convergence) {
+    # iteration over theta parameters
+    for( j from 1 to n){
+        update = 0;
+        # iteration over training samples
+            for( i from 1 to m) {
+                update = update + (h(x[i]) - y[i]) x[i];
+            }
+        theta_new[j] = theta[j] – alpha * update / m;
+    }
+    theta = theta_new;
+}
+```
+#### STOCHASTIC GD PSEUDOCODE
+
+```
+theta = rand();
+while (not convergence){
+    # iteration over training samples
+    for(i from 1 to m) {
+        # iteration over theta parameters
+            for(j from 1 to n){
+                theta_new[j] = theta[j] – alpha * (h(x[i]) - y[i]) x[i];
+            }
+        theta = theta_new;
+    }
+}
+```
+
+#### MINI BATCH GRADIENT DESCENT
+
+It’s a compromise between the last two algorithms. The dataset is divided in mini-batches of a fixed length ($b$ with $1<b<m)$ and we update $\theta_s$ based on the error of these mini-batches. In
+this way we combine the best of both worlds and we obtain both convergence and speed.
+In this way it reduces the variance of the parameter updates, leading to more stable convergence (more robust), and allows the use of vectorization libraries rather than computing each step separately (more efficient).
+The implementation is the following: 
+
+```
+b = 50;
+while (not convergence){
+    # iteration over training samples
+    while(i < m){
+    # iteration over theta parameters
+        for(j from 1 to n){
+            update = 0;
+            # iteration over the b samples
+            for( z from i to i + b ){
+                update = update + (h(x[z]) - y[z]) x[z];
+            }
+            theta[j] = theta[j] – alpha * update / b;
+        }
+        i = i + b;
+    }
+}
+```
+### LINEAR REGRESSION FOR MULTIPLE VARIABLES 
+
+Till now, what we’ve seen is linear regression were the hypothesis is a linear function. Linear regression is used for many many tasks and it is useful also to have a rough idea of the behaviour of a dataset.
+Even it is conceived to be a linear model, it can be adapted also to consider more complex model, such as a polynomial model.
+
+The rough idea is to add new artificial features to our dataset.
+E.g. If we think about our house pricing example, let’s say we have the following hypothesis:
+
+$$
+h_{\theta} (x^{i}) = \theta_0 + \theta_1 \cdot front^{(i)} + \theta_2 \cdot side^{(i)}
+$$
+
+Maybe the front and side values are not very informative, but their product, the area, might be.
+In substance we are adding a quadratic term.
+What i do is computing a new feature whose values are the areas given fronts and sides for
+each datapoint. We do not care that this feature is obtained as a quadratic term, we just
+consider it as a parameter:
+
+$$
+h_{\theta}(x^{(i)}) = \theta_0 + \theta_1 \cdot area^{(i)}
+$$
+
+Similarly we can consider the following polynomial hypothesis: 
+
+$$
+\theta_0 + \theta_1x + \theta_2 x^{2} + \theta_3x^{3}
+$$
+
+So I can basically create new artificial features:
+
+$$
+x_1^{(i)} = (area) \\
+x_2^{(i)} = (area)^2\\
+x_3^{(i)} = (area)^3
+$$
+
+In this way what i get as an hypothesis is: 
+
+$$
+h_{\theta(x^{(i)})} = \theta_0 + \theta_1 x_1^{(i)} + \theta_2 x_2^{(i)} + \theta_3 x_3^{(i)} \\
+= \theta_0 + \theta_1 (area^{(i)}) + \theta_2 (area^{(i)})^2 + \theta_3 (area^{(i)})^3
+$$
+
+In this way i can apply the simple theoretical structure i already know to a polynomial
+hypothesis.
+
+### FEATURE SCALING
+#### Linear regression with polynomial model 
+#### Stopping condition
+The stopping condition is usually a design choice:
+We have multiple options:
+- Max iteration: the algorithm stops after a fixed number of iterations
+- Absolute tolerance: the algorithm stops when a fixed value of the cost function is reached;
+- Relative tolerance: the algorithm stops when the decreasing of the cost function w.r.t. the previous step is below a fixed rate
+- Gradient Norm tolerance: the algorithm stops when the norm of the gradient is lower than a fixed value.
 
 ## Support Vector Machines
 
